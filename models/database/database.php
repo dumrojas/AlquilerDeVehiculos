@@ -2,21 +2,39 @@
 
 namespace app\models\database;
 
+use Exception;
 use mysqli;
 use mysqli_stmt;
-use RuntimeException;
 
 class Database implements DatabaseInterface
 {
+    private string $host_db = "localhost";
+    private string $user_db = "root";
+    private string $pwd_db = "";
+    private string $name_db = "alquiler_vehiculos_db";
+    private int $port_db = 3306;
+
     private mysqli $conex;
     private int $last_id = 0;
 
     public function __construct()
     {
-        $this->conex = \DB::conectar();
+        $this->conex = new mysqli(
+            $this->host_db,
+            $this->user_db,
+            $this->pwd_db,
+            $this->name_db,
+            $this->port_db
+        );
+
+        if ($this->conex->connect_error) {
+            throw new Exception("Error de conexión: " . $this->conex->connect_error);
+        }
+
+        $this->conex->set_charset("utf8mb4");
     }
 
-    public function select(string $sql, array $params = []): array
+    public function query_select(string $sql, array $params = []): array
     {
         $stmt = $this->prepare($sql, $params);
         $stmt->execute();
@@ -27,11 +45,15 @@ class Database implements DatabaseInterface
         return $rows;
     }
 
-    public function execute(string $sql, array $params = []): bool
+    public function query(string $sql, array $params = []): bool
     {
         $stmt = $this->prepare($sql, $params);
         $ok = $stmt->execute();
-        $this->last_id = $stmt->insert_id > 0 ? $stmt->insert_id : $this->last_id;
+
+        if ($stmt->insert_id > 0) {
+            $this->last_id = $stmt->insert_id;
+        }
+
         $stmt->close();
 
         return $ok;
@@ -62,7 +84,7 @@ class Database implements DatabaseInterface
         $stmt = $this->conex->prepare($sql);
 
         if ($stmt === false) {
-            throw new RuntimeException("Error al preparar la consulta: " . $this->conex->error);
+            throw new Exception("Error al preparar la consulta: " . $this->conex->error);
         }
 
         if (count($params) === 0) {
@@ -80,10 +102,12 @@ class Database implements DatabaseInterface
             } else {
                 $types .= "s";
             }
+
             $values[] = $value;
         }
 
         $references = [$types];
+
         foreach ($values as $index => $value) {
             $references[] = &$values[$index];
         }

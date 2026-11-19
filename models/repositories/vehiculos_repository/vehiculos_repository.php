@@ -18,7 +18,7 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function get_vehiculos(): array
     {
-        $rows = $this->db->select("SELECT * FROM vehiculos ORDER BY marca, modelo");
+        $rows = $this->db->query_select("SELECT * FROM vehiculos ORDER BY marca, modelo");
 
         return array_map(
             fn(array $row): Vehiculo => VehiculoMappers::to_entity($row),
@@ -38,7 +38,7 @@ class VehiculosRepository implements VehiculosRepositoryInterface
                 )
                 ORDER BY v.marca, v.modelo";
 
-        $rows = $this->db->select($sql);
+        $rows = $this->db->query_select($sql);
 
         return array_map(
             fn(array $row): Vehiculo => VehiculoMappers::to_entity($row),
@@ -48,7 +48,7 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function find_by_id(int $id): Vehiculo
     {
-        $rows = $this->db->select("SELECT * FROM vehiculos WHERE id = ?", [$id]);
+        $rows = $this->db->query_select("SELECT * FROM vehiculos WHERE id = ?", [$id]);
 
         if (count($rows) === 0) {
             throw new Exception("Vehículo no encontrado", 2);
@@ -62,7 +62,7 @@ class VehiculosRepository implements VehiculosRepositoryInterface
         $sql = "INSERT INTO vehiculos (marca, modelo, anio, categoria, estado)
                 VALUES (?, ?, ?, ?, ?)";
 
-        $this->db->execute($sql, [
+        $this->db->query($sql, [
             $vehiculo->get_marca(),
             $vehiculo->get_modelo(),
             $vehiculo->get_anio(),
@@ -79,7 +79,7 @@ class VehiculosRepository implements VehiculosRepositoryInterface
                 SET marca = ?, modelo = ?, anio = ?, categoria = ?, estado = ?
                 WHERE id = ?";
 
-        return $this->db->execute($sql, [
+        return $this->db->query($sql, [
             $vehiculo->get_marca(),
             $vehiculo->get_modelo(),
             $vehiculo->get_anio(),
@@ -91,12 +91,12 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function delete(int $id): bool
     {
-        return $this->db->execute("DELETE FROM vehiculos WHERE id = ?", [$id]);
+        return $this->db->query("DELETE FROM vehiculos WHERE id = ?", [$id]);
     }
 
     public function update_estado(int $id, string $estado): bool
     {
-        return $this->db->execute(
+        return $this->db->query(
             "UPDATE vehiculos SET estado = ? WHERE id = ?",
             [$estado, $id]
         );
@@ -104,7 +104,7 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function tiene_reservas(int $id): bool
     {
-        $rows = $this->db->select(
+        $rows = $this->db->query_select(
             "SELECT COUNT(*) AS total FROM reservas WHERE vehiculo_id = ?",
             [$id]
         );

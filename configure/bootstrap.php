@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . "/data_base/conexion.php";
-
 require_once __DIR__ . "/../models/entities/vehiculo.php";
 require_once __DIR__ . "/../models/entities/cliente.php";
 require_once __DIR__ . "/../models/entities/reserva.php";

@@ -4,9 +4,9 @@ namespace app\models\database;
 
 interface DatabaseInterface
 {
-    public function select(string $sql, array $params = []): array;
+    public function query_select(string $sql, array $params = []): array;
 
-    public function execute(string $sql, array $params = []): bool;
+    public function query(string $sql, array $params = []): bool;
 
     public function last_insert_id(): int;
 

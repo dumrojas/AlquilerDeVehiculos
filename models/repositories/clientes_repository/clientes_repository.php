@@ -18,7 +18,7 @@ class ClientesRepository implements ClientesRepositoryInterface
 
     public function get_clientes(): array
     {
-        $rows = $this->db->select("SELECT * FROM clientes ORDER BY nombre");
+        $rows = $this->db->query_select("SELECT * FROM clientes ORDER BY nombre");
 
         return array_map(
             fn(array $row): Cliente => ClienteMappers::to_entity($row),
@@ -28,7 +28,7 @@ class ClientesRepository implements ClientesRepositoryInterface
 
     public function find_by_id(int $id): Cliente
     {
-        $rows = $this->db->select("SELECT * FROM clientes WHERE id = ?", [$id]);
+        $rows = $this->db->query_select("SELECT * FROM clientes WHERE id = ?", [$id]);
 
         if (count($rows) === 0) {
             throw new Exception("Cliente no encontrado", 2);
@@ -42,7 +42,7 @@ class ClientesRepository implements ClientesRepositoryInterface
         $sql = "INSERT INTO clientes (nombre, telefono, correo, numero_licencia)
                 VALUES (?, ?, ?, ?)";
 
-        $this->db->execute($sql, [
+        $this->db->query($sql, [
             $cliente->get_nombre(),
             $cliente->get_telefono(),
             $cliente->get_correo(),
@@ -58,7 +58,7 @@ class ClientesRepository implements ClientesRepositoryInterface
                 SET nombre = ?, telefono = ?, correo = ?, numero_licencia = ?
                 WHERE id = ?";
 
-        return $this->db->execute($sql, [
+        return $this->db->query($sql, [
             $cliente->get_nombre(),
             $cliente->get_telefono(),
             $cliente->get_correo(),
@@ -69,12 +69,12 @@ class ClientesRepository implements ClientesRepositoryInterface
 
     public function delete(int $id): bool
     {
-        return $this->db->execute("DELETE FROM clientes WHERE id = ?", [$id]);
+        return $this->db->query("DELETE FROM clientes WHERE id = ?", [$id]);
     }
 
     public function tiene_reservas(int $id): bool
     {
-        $rows = $this->db->select(
+        $rows = $this->db->query_select(
             "SELECT COUNT(*) AS total FROM reservas WHERE cliente_id = ?",
             [$id]
         );
