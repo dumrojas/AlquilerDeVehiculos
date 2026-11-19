@@ -42,7 +42,7 @@ CREATE TABLE reservas (
     FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id) ON DELETE CASCADE
 );
 
--- Datos de ejemplo para la demostración
+-- Inseccion de datos 
 
 INSERT INTO vehiculos (id, marca, modelo, anio, categoria, estado) VALUES
 (2, 'Toyota',  'Corolla',  2023, 'Sedán',     'disponible'),
