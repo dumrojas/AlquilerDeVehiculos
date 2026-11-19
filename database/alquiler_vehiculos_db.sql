@@ -1,5 +1,11 @@
-CREATE DATABASE IF NOT EXISTS alquiler_vehiculos_db;
+CREATE DATABASE IF NOT EXISTS alquiler_vehiculos_db
+    DEFAULT CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
 USE alquiler_vehiculos_db;
+
+DROP TABLE IF EXISTS reservas;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS vehiculos;
 
 CREATE TABLE vehiculos (
     id INT AUTO_INCREMENT PRIMARY KEY,
