@@ -12,7 +12,7 @@ interface ReservasControllerInterface
 
     public function get_reserva(int $id): Reserva;
 
-    public function save_reserva(array $request): int;
+    public function save_reserva(array $request): bool;
 
     public function update_reserva(array $request): bool;
 

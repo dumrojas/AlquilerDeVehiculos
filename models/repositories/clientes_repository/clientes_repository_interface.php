@@ -10,7 +10,7 @@ interface ClientesRepositoryInterface
 
     public function find_by_id(int $id): Cliente;
 
-    public function save(Cliente $cliente): int;
+    public function save(Cliente $cliente): bool;
 
     public function update(Cliente $cliente): bool;
 

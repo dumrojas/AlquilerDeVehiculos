@@ -18,7 +18,8 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function get_vehiculos(): array
     {
-        $rows = $this->db->query_select("SELECT * FROM vehiculos ORDER BY marca, modelo");
+        $sql = "select * from vehiculos order by marca, modelo";
+        $rows = $this->db->query_select($sql);
 
         return array_map(
             fn(array $row): Vehiculo => VehiculoMappers::to_entity($row),
@@ -28,15 +29,15 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function get_vehiculos_disponibles(): array
     {
-        $sql = "SELECT v.* FROM vehiculos v
-                WHERE v.estado = 'disponible'
-                AND NOT EXISTS (
-                    SELECT 1 FROM reservas r
-                    WHERE r.vehiculo_id = v.id
-                    AND r.estado = 'activa'
-                    AND CURDATE() BETWEEN r.fecha_inicio AND r.fecha_fin
+        $sql = "select v.* from vehiculos v
+                where v.estado = 'disponible'
+                and not exists (
+                    select 1 from reservas r
+                    where r.vehiculo_id = v.id
+                    and r.estado = 'activa'
+                    and curdate() between r.fecha_inicio and r.fecha_fin
                 )
-                ORDER BY v.marca, v.modelo";
+                order by v.marca, v.modelo";
 
         $rows = $this->db->query_select($sql);
 
@@ -48,7 +49,8 @@ class VehiculosRepository implements VehiculosRepositoryInterface
 
     public function find_by_id(int $id): Vehiculo
     {
-        $rows = $this->db->query_select("SELECT * FROM vehiculos WHERE id = ?", [$id]);
+        $sql = "select * from vehiculos where id=$id";
+        $rows = $this->db->query_select($sql);
 
         if (count($rows) === 0) {
             throw new Exception("Vehículo no encontrado", 2);
@@ -57,57 +59,47 @@ class VehiculosRepository implements VehiculosRepositoryInterface
         return VehiculoMappers::to_entity($rows[0]);
     }
 
-    public function save(Vehiculo $vehiculo): int
+    public function save(Vehiculo $vehiculo): bool
     {
-        $sql = "INSERT INTO vehiculos (marca, modelo, anio, categoria, estado)
-                VALUES (?, ?, ?, ?, ?)";
+        $sql = "insert into vehiculos (marca, modelo, anio, categoria, estado) values";
+        $sql .= "('" . $vehiculo->get_marca() . "','" . $vehiculo->get_modelo() . "',";
+        $sql .= $vehiculo->get_anio() . ",'" . $vehiculo->get_categoria() . "',";
+        $sql .= "'" . $vehiculo->get_estado() . "')";
 
-        $this->db->query($sql, [
-            $vehiculo->get_marca(),
-            $vehiculo->get_modelo(),
-            $vehiculo->get_anio(),
-            $vehiculo->get_categoria(),
-            $vehiculo->get_estado()
-        ]);
-
-        return $this->db->last_insert_id();
+        return $this->db->query($sql);
     }
 
     public function update(Vehiculo $vehiculo): bool
     {
-        $sql = "UPDATE vehiculos
-                SET marca = ?, modelo = ?, anio = ?, categoria = ?, estado = ?
-                WHERE id = ?";
+        $sql = "update vehiculos set ";
+        $sql .= "marca='" . $vehiculo->get_marca() . "', ";
+        $sql .= "modelo='" . $vehiculo->get_modelo() . "', ";
+        $sql .= "anio=" . $vehiculo->get_anio() . ", ";
+        $sql .= "categoria='" . $vehiculo->get_categoria() . "', ";
+        $sql .= "estado='" . $vehiculo->get_estado() . "' ";
+        $sql .= "where id=" . $vehiculo->get_id();
 
-        return $this->db->query($sql, [
-            $vehiculo->get_marca(),
-            $vehiculo->get_modelo(),
-            $vehiculo->get_anio(),
-            $vehiculo->get_categoria(),
-            $vehiculo->get_estado(),
-            $vehiculo->get_id()
-        ]);
+        return $this->db->query($sql);
     }
 
     public function delete(int $id): bool
     {
-        return $this->db->query("DELETE FROM vehiculos WHERE id = ?", [$id]);
+        $sql = "delete from vehiculos where id=$id";
+
+        return $this->db->query($sql);
     }
 
     public function update_estado(int $id, string $estado): bool
     {
-        return $this->db->query(
-            "UPDATE vehiculos SET estado = ? WHERE id = ?",
-            [$estado, $id]
-        );
+        $sql = "update vehiculos set estado='$estado' where id=$id";
+
+        return $this->db->query($sql);
     }
 
     public function tiene_reservas(int $id): bool
     {
-        $rows = $this->db->query_select(
-            "SELECT COUNT(*) AS total FROM reservas WHERE vehiculo_id = ?",
-            [$id]
-        );
+        $sql = "select count(*) as total from reservas where vehiculo_id=$id";
+        $rows = $this->db->query_select($sql);
 
         return (int) ($rows[0]["total"] ?? 0) > 0;
     }

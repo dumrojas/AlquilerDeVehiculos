@@ -12,7 +12,7 @@ interface ReservasRepositoryInterface
 
     public function find_by_id(int $id): Reserva;
 
-    public function save(Reserva $reserva): int;
+    public function save(Reserva $reserva): bool;
 
     public function update(Reserva $reserva): bool;
 

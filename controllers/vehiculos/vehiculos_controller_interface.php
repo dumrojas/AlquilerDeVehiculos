@@ -12,7 +12,7 @@ interface VehiculosControllerInterface
 
     public function get_vehiculo(int $id): Vehiculo;
 
-    public function save_vehiculo(array $request): int;
+    public function save_vehiculo(array $request): bool;
 
     public function update_vehiculo(array $request): bool;
 

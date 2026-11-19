@@ -13,29 +13,23 @@ use app\models\repositories\reservas_repository\ReservasRepositoryInterface;
 
 class ModelsConfig
 {
-    private static ?DatabaseInterface $db = null;
-
     public static function get_db(): DatabaseInterface
     {
-        if (self::$db === null) {
-            self::$db = new Database();
-        }
-
-        return self::$db;
+        return new Database();
     }
 
     public static function get_vehiculos_repository(): VehiculosRepositoryInterface
     {
-        return new VehiculosRepository(self::get_db());
+        return new VehiculosRepository(ModelsConfig::get_db());
     }
 
     public static function get_clientes_repository(): ClientesRepositoryInterface
     {
-        return new ClientesRepository(self::get_db());
+        return new ClientesRepository(ModelsConfig::get_db());
     }
 
     public static function get_reservas_repository(): ReservasRepositoryInterface
     {
-        return new ReservasRepository(self::get_db());
+        return new ReservasRepository(ModelsConfig::get_db());
     }
 }

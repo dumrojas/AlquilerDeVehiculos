@@ -26,7 +26,7 @@ class ClientesController implements ClientesControllerInterface
         return $this->clientes_model->find_by_id($id);
     }
 
-    public function save_cliente(array $request): int
+    public function save_cliente(array $request): bool
     {
         $cliente = ClientesMapperController::to_entity($request);
         $this->validar($cliente);

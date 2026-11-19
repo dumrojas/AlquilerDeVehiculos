@@ -4,7 +4,6 @@ namespace app\controllers\reservas;
 
 use app\controllers\exceptions\DatosInvalidos;
 use app\controllers\mappers\ReservasMapperController;
-use app\models\database\DatabaseInterface;
 use app\models\entities\Reserva;
 use app\models\repositories\reservas_repository\ReservasRepositoryInterface;
 use app\models\repositories\vehiculos_repository\VehiculosRepositoryInterface;
@@ -14,16 +13,13 @@ class ReservasController implements ReservasControllerInterface
 {
     private ReservasRepositoryInterface $reservas_model;
     private VehiculosRepositoryInterface $vehiculos_model;
-    private DatabaseInterface $db;
 
     public function __construct(
         ReservasRepositoryInterface $reservas_model,
-        VehiculosRepositoryInterface $vehiculos_model,
-        DatabaseInterface $db
+        VehiculosRepositoryInterface $vehiculos_model
     ) {
         $this->reservas_model = $reservas_model;
         $this->vehiculos_model = $vehiculos_model;
-        $this->db = $db;
     }
 
     public function get_reservas(): array
@@ -41,7 +37,7 @@ class ReservasController implements ReservasControllerInterface
         return $this->reservas_model->find_by_id($id);
     }
 
-    public function save_reserva(array $request): int
+    public function save_reserva(array $request): bool
     {
         $reserva = new Reserva(
             0,
@@ -54,18 +50,10 @@ class ReservasController implements ReservasControllerInterface
 
         $this->validar($reserva, 0);
 
-        $this->db->begin_transaction();
+        $ok = $this->reservas_model->save($reserva);
+        $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
 
-        try {
-            $id = $this->reservas_model->save($reserva);
-            $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
-            $this->db->commit();
-        } catch (\Throwable $ex) {
-            $this->db->rollback();
-            throw $ex;
-        }
-
-        return $id;
+        return $ok;
     }
 
     public function update_reserva(array $request): bool
@@ -79,17 +67,9 @@ class ReservasController implements ReservasControllerInterface
         $anterior = $this->reservas_model->find_by_id($reserva->get_id());
         $this->validar($reserva, $reserva->get_id());
 
-        $this->db->begin_transaction();
-
-        try {
-            $ok = $this->reservas_model->update($reserva);
-            $this->sincronizar_estado_vehiculo($anterior->get_vehiculo_id());
-            $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
-            $this->db->commit();
-        } catch (\Throwable $ex) {
-            $this->db->rollback();
-            throw $ex;
-        }
+        $ok = $this->reservas_model->update($reserva);
+        $this->sincronizar_estado_vehiculo($anterior->get_vehiculo_id());
+        $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
 
         return $ok;
     }
@@ -102,16 +82,8 @@ class ReservasController implements ReservasControllerInterface
             throw new DatosInvalidos("Solo se pueden cancelar reservas activas.");
         }
 
-        $this->db->begin_transaction();
-
-        try {
-            $ok = $this->reservas_model->update_estado($id, "cancelada");
-            $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
-            $this->db->commit();
-        } catch (\Throwable $ex) {
-            $this->db->rollback();
-            throw $ex;
-        }
+        $ok = $this->reservas_model->update_estado($id, "cancelada");
+        $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
 
         return $ok;
     }
@@ -124,16 +96,8 @@ class ReservasController implements ReservasControllerInterface
             throw new DatosInvalidos("Solo se pueden devolver reservas activas.");
         }
 
-        $this->db->begin_transaction();
-
-        try {
-            $ok = $this->reservas_model->update_estado($id, "completada");
-            $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
-            $this->db->commit();
-        } catch (\Throwable $ex) {
-            $this->db->rollback();
-            throw $ex;
-        }
+        $ok = $this->reservas_model->update_estado($id, "completada");
+        $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
 
         return $ok;
     }
@@ -142,16 +106,8 @@ class ReservasController implements ReservasControllerInterface
     {
         $reserva = $this->reservas_model->find_by_id($id);
 
-        $this->db->begin_transaction();
-
-        try {
-            $ok = $this->reservas_model->delete($id);
-            $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
-            $this->db->commit();
-        } catch (\Throwable $ex) {
-            $this->db->rollback();
-            throw $ex;
-        }
+        $ok = $this->reservas_model->delete($id);
+        $this->sincronizar_estado_vehiculo($reserva->get_vehiculo_id());
 
         return $ok;
     }

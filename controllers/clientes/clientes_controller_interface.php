@@ -10,7 +10,7 @@ interface ClientesControllerInterface
 
     public function get_cliente(int $id): Cliente;
 
-    public function save_cliente(array $request): int;
+    public function save_cliente(array $request): bool;
 
     public function update_cliente(array $request): bool;
 

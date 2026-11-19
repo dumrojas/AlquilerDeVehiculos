@@ -12,7 +12,7 @@ interface VehiculosRepositoryInterface
 
     public function find_by_id(int $id): Vehiculo;
 
-    public function save(Vehiculo $vehiculo): int;
+    public function save(Vehiculo $vehiculo): bool;
 
     public function update(Vehiculo $vehiculo): bool;
 

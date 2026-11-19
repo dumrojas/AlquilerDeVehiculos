@@ -33,7 +33,7 @@ class VehiculosController implements VehiculosControllerInterface
         return $this->vehiculos_model->find_by_id($id);
     }
 
-    public function save_vehiculo(array $request): int
+    public function save_vehiculo(array $request): bool
     {
         $vehiculo = VehiculosMapperController::to_entity($request);
         $this->validar($vehiculo);

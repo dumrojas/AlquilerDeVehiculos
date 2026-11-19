@@ -26,8 +26,7 @@ class ControllersConfig
     {
         return new ReservasController(
             ModelsConfig::get_reservas_repository(),
-            ModelsConfig::get_vehiculos_repository(),
-            ModelsConfig::get_db()
+            ModelsConfig::get_vehiculos_repository()
         );
     }
 }
